@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Send Us Your Feedback</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #faf7f2;
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      color: #222;
+    }
+    nav {
+      background: #fff;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 2px 6px #eee;
+      margin-bottom: 0;
+    }
+    nav a {
+      color: #b23c17;
+      text-decoration: none;
+      margin: 0 18px;
+      font-weight: 700;
+      font-size: 18px;
+      transition: color 0.2s;
+    }
+    nav a:hover {
+      color: #f68a1e;
+    }
+    .feedback-container {
+      max-width: 420px;
+      margin: 50px auto 0 auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px #eee;
+      padding: 32px 28px 28px 28px;
+      text-align: center;
+    }
+    h1 {
+      color: #b23c17;
+      margin-bottom: 20px;
+      font-size: 2em;
+      font-weight: bold;
+    }
+    label {
+      display: block;
+      text-align: left;
+      margin: 16px 0 6px 2px;
+      font-weight: 500;
+      color: #444;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      margin-bottom: 8px;
+      box-sizing: border-box;
+      background: #faf7f2;
+      transition: border 0.2s;
+    }
+    input:focus, textarea:focus {
+      border: 1.5px solid #b23c17;
+      outline: none;
+    }
+    button {
+      background: #b23c17;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 12px 36px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #0002;
+    }
+    button:hover {
+      background: #f68a1e;
+    }
+    #feedback-response {
+      margin-top: 18px;
+      font-size: 1.1em;
+      font-weight: bold;
+      min-height: 1em;
+    }
+    .success { color: #388e3c; }
+    .error { color: #b23c17; }
+    @media (max-width: 600px) {
+      .feedback-container { padding: 18px 6px; }
+      nav a { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/index.html">Home</a> |
+    <a href="/menu.html">Menu</a> |
+    <a href="/reservation.html">Reserve</a> |
+    <a href="/order.html">Order</a> |
+    <a href="/feedback.html">Feedback</a>
+  </nav>
+  <div class="feedback-container">
+    <h1>Send Us Your Feedback</h1>
+    <form id="feedback-form">
+      <label for="name">Name:</label>
+      <input type="text" name="name" id="name" required>
+      <label for="email">Email:</label>
+      <input type="email" name="email" id="email" required>
+      <label for="message">Message:</label>
+      <textarea name="message" id="message" rows="4" required></textarea>
+      <button type="submit">Send</button>
+    </form>
+    <div id="feedback-response"></div>
+  </div>
+  <script>
+    document.getElementById('feedback-form').onsubmit = async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        name: form.name.value,
+        email: form.email.value,
+        message: form.message.value
+      };
+      try {
+        const res = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success || result.message) {
+          document.getElementById('feedback-response').textContent = result.message || "Thank you for your feedback!";
+          document.getElementById('feedback-response').className = 'success';
+          form.reset();
+        } else {
+          document.getElementById('feedback-response').textContent = result.error || "Something went wrong. Please try again.";
+          document.getElementById('feedback-response').className = 'error';
+        }
+      } catch (err) {
+        document.getElementById('feedback-response').textContent = "Server error. Please try again later.";
+        document.getElementById('feedback-response').className = 'error';
+      }
+    }
+  </script>
+</body>
+</html>

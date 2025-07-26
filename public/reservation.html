@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reserve a Table - RNRN JOINT</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #faf7f2;
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      color: #222;
+    }
+    nav {
+      background: #3e0032;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 2px 6px #eee;
+    }
+    nav a {
+      color: #b23c17;
+      text-decoration: none;
+      margin: 0 18px;
+      font-weight: 700;
+      font-size: 18px;
+      transition: color 0.2s;
+    }
+    nav a:hover {
+      color: #f68a1e;
+    }
+    .reservation-container {
+      max-width: 420px;
+      margin: 50px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px #eee;
+      padding: 32px 28px;
+      text-align: center;
+    }
+    h1 {
+      color: #b23c17;
+      margin-bottom: 30px;
+      font-size: 2.2em;
+    }
+    label {
+      display: block;
+      text-align: left;
+      margin: 16px 0 8px 2px;
+      font-weight: 500;
+      color: #444;
+      font-size: 1.1em;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1em;
+      margin-bottom: 8px;
+      box-sizing: border-box;
+      background: #faf7f2;
+    }
+    input:focus, select:focus {
+      border: 1.5px solid #b23c17;
+      outline: none;
+    }
+    button {
+      background: #b23c17;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 14px 40px;
+      font-size: 1.1em;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px #0002;
+      width: 180px;
+    }
+    button:hover {
+      background: #f68a1e;
+    }
+    #reservation-response {
+      margin-top: 20px;
+      font-size: 1.1em;
+      min-height: 1.5em;
+      font-weight: bold;
+    }
+    .success { color: #388e3c; }
+    .error { color: #d32f2f; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/index.html">Home</a> |
+    <a href="/menu.html">Menu</a> |
+    <a href="/reservation.html">Reserve</a> |
+    <a href="/order.html">Order</a> |
+    <a href="/feedback.html">Feedback</a> |
+    <a href="/login.html">Login</a> |
+    <a href="/register.html">Register</a>
+  </nav>
+  <div class="reservation-container">
+    <h1>Book a Table</h1>
+    <form id="reservation-form">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+      
+      <label for="date">Date:</label>
+      <input type="date" id="date" name="date" required>
+      
+      <label for="time">Time:</label>
+      <input type="time" id="time" name="time" required>
+      
+      <label for="guests">Guests:</label>
+      <input type="number" id="guests" name="guests" min="1" max="20" required>
+      
+      <button type="submit">Reserve</button>
+    </form>
+    <div id="reservation-response"></div>
+  </div>
+
+  <script>
+    document.getElementById('reservation-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Check if user is logged in
+      let token = localStorage.getItem('token');
+      if (!token) {
+        document.getElementById('reservation-response').textContent = "Please login before making a reservation";
+        document.getElementById('reservation-response').className = 'error';
+        setTimeout(() => {
+          window.location.href = '/login.html';
+        }, 2000);
+        return;
+      }
+      
+      const form = e.target;
+      const data = {
+        name: form.name.value,
+        date: form.date.value,
+        time: form.time.value,
+        guests: parseInt(form.guests.value)
+      };
+      
+      try {
+        const res = await fetch('/api/reservations', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          document.getElementById('reservation-response').textContent = "Reservation confirmed!";
+          document.getElementById('reservation-response').className = 'success';
+          form.reset();
+        } else {
+          document.getElementById('reservation-response').textContent = result.error || "Unable to make reservation";
+          document.getElementById('reservation-response').className = 'error';
+        }
+      } catch (err) {
+        document.getElementById('reservation-response').textContent = "Server error. Please try again later.";
+        document.getElementById('reservation-response').className = 'error';
+      }
+    });
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').min = today;
+  </script>
+</body>
+</html>
+
